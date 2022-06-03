@@ -24,9 +24,19 @@ class CategoryService {
   readDataById(int dataId)async{
     return await _repository?.readDataById(tableName, dataId);
   }
-  updateDataById(int dataId)async{
-    return await _repository?.updateDataById(tableName, dataId);
+
+  void updateCategory(Category category) async {
+
+    return await _repository?.updateData(tableName,category.categoryMap());
   }
+
+
+
+
+
+/*updateDataById(int dataId)async{
+    return await _repository?.updateDataById(tableName, dataId);
+  }*/
 }
 
   const String tableName = 'categories';

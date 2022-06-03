@@ -16,11 +16,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   var _categoryNameController = TextEditingController();
   var _categoryDescriptionController = TextEditingController();
   var _editCategoryNameController = TextEditingController();
-  var _editCategoryDescriptionController= TextEditingController();
+  var _editCategoryDescriptionController = TextEditingController();
   var _category = Category();
   var _categoryService = CategoryService();
 
-  List<Category> _categoryList = List.empty();
+  List<Category> _categoryList = List.empty(growable: true);
   @override
   void initState() {
     super.initState();
@@ -28,28 +28,42 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   getAllCategories() async {
-    _categoryList = <Category>[];
     var categories = await _categoryService.readCategories();
-    categories.forEach((_category) {
-      setState(() {
-        var categoryModel = Category();
-        categoryModel.name = _category['name'];
-        categoryModel.description = _category['description'];
-        categoryModel.id = _category['id'];
-        _categoryList.add(categoryModel);
+    setState(() {
+      _categoryList = [];
+
+      categories.forEach((_category) {
+        if (categories != null) {
+          debugPrint("Categories null !:: $categories");
+
+          var categoryModel = Category();
+          categoryModel.name = _category['name'];
+          categoryModel.description = _category['description'];
+          categoryModel.id = _category['id'];
+          _categoryList.add(categoryModel);
+        } else {
+          debugPrint("Categories null :: $categories");
+          setState(() {
+            _categoryList = [];
+          });
+        }
       });
     });
   }
 
-  _editCategory(BuildContext context,categoryId)async{
-    _category = await _categoryService.readDataById(categoryId);
+  _editCategory(BuildContext context, categoryId) async {
+    var _readCategory = await _categoryService.readDataById(categoryId);
     setState(() {
-      _editCategoryNameController.text = _category[0]['name'] ?? 'No name';
+      _editCategoryNameController.text =
+          (_readCategory[0]['name'] ?? 'No name').toString();
       _editCategoryDescriptionController.text =
-          _category[0]['description'] ?? 'No description';
+          _readCategory[0]['description'] ?? 'No description';
+
     });
+    _editFormDialog(context, categoryId);
   }
-  _showFormDialog(BuildContext context ) {
+
+  _showFormDialog(BuildContext context) {
     return showDialog(
         context: context,
         barrierDismissible: true,
@@ -64,11 +78,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               FlatButton(
                 color: Colors.blue,
                 onPressed: () async {
+
                   _category.name = _categoryNameController.text;
                   _category.description = _categoryDescriptionController.text;
                   _categoryService.saveCategory(_category);
-                  getAllCategories();
+                  _categoryNameController = TextEditingController();
+                  _categoryDescriptionController = TextEditingController();
+                  if (_category.name == null || _category.name =="") {
+                    Navigator.pop(context);
+                    return;
+                  }
+
+                  await getAllCategories();
                   Navigator.pop(context);
+
                 },
                 child: Text('Save'),
               ),
@@ -94,7 +117,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           );
         });
   }
-  _editFormDialog(BuildContext context ) {
+
+  _editFormDialog(BuildContext context, categoryId) {
     return showDialog(
         context: context,
         barrierDismissible: true,
@@ -108,11 +132,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ),
               FlatButton(
                 color: Colors.blue,
-                onPressed: () async {
-                  _category.name = _categoryNameController.text;
-                  _category.description = _categoryDescriptionController.text;
-                  _categoryService.saveCategory(_category);
-                  getAllCategories();
+                onPressed: () async {const snackBar = SnackBar(
+                  content: Text('updated!'),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  _category.id = categoryId;
+                  _category.name = _editCategoryNameController.text;
+                  _category.description =
+                      _editCategoryDescriptionController.text;
+                  _categoryService.updateCategory(_category);
+                  await getAllCategories();
                   Navigator.pop(context);
                 },
                 child: Text('Update '),
@@ -139,6 +168,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           );
         });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,7 +200,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 children: [
                   Text(_categoryList[index].name ?? ""),
                   IconButton(
+                    padding: EdgeInsets.only(top: 18.0),
                     icon: Icon(
+                      size: 25,
                       Icons.delete,
                       color: Colors.red,
                     ),
@@ -187,8 +219,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showFormDialog(context)
-        ,
+        onPressed: () => _showFormDialog(context),
         child: Icon(Icons.add),
       ),
     );

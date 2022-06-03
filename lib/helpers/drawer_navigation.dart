@@ -1,15 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_todo/screens/categories_screens.dart';
 import 'package:flutter_todo/screens/home_screens.dart';
+import 'package:flutter_todo/services/category_service.dart';
 
 class DrawerNavigation extends StatefulWidget {
-  const DrawerNavigation({Key? key}) : super(key: key);
 
   @override
   State<DrawerNavigation> createState() => _DrawerNavigationState();
 }
 
 class _DrawerNavigationState extends State<DrawerNavigation> {
+
+  var _categoryList = List<Widget>.empty(growable:true);
+  CategoryService _categoryService = CategoryService();
+  initState(){
+    super.initState();
+    getAllCategories();
+  }
+  getAllCategories() async{
+    var categories = await _categoryService.readCategories();
+
+    categories.forEach((category){
+      setState((){
+        _categoryList.add(ListTile(
+          title: Text(category['name']),
+        ));
+      });
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -31,7 +49,12 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
               title:Text('Categories'),
               leading:Icon(Icons.view_list),
               onTap:()=>Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CategoriesScreen(),),),
-            )
+            ),
+            Divider(),
+            Column(
+            children: _categoryList,
+            ),
+
 
           ],
         ),
