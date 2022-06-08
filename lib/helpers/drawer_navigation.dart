@@ -3,6 +3,8 @@ import 'package:flutter_todo/screens/categories_screens.dart';
 import 'package:flutter_todo/screens/home_screens.dart';
 import 'package:flutter_todo/services/category_service.dart';
 
+import '../screens/todos_by_category.dart';
+
 class DrawerNavigation extends StatefulWidget {
 
   @override
@@ -22,8 +24,11 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
 
     categories.forEach((category){
       setState((){
-        _categoryList.add(ListTile(
-          title: Text(category['name']),
+        _categoryList.add(InkWell(
+          onTap: ()=>Navigator.push(context, new MaterialPageRoute(builder: (context)=> new TodosByCategory())),
+          child: ListTile(
+            title: Text(category['name']),
+          ),
         ));
       });
     });

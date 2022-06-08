@@ -42,11 +42,8 @@ readDataById(table,dataId)async{
   var connection = await database;
   return await connection?.update(table , data,where:'id =?',whereArgs:[data['id']]);
   }
-/*updateDataById(table,dataId)async{
-
-  var connection = await database;
-  return await connection?.update(table, where: 'id =?', whereArgs: [dataId]);
-
-}
- */
+  readDataByCategory(table,columnName,columnValue)async{
+  var connection =await database;
+  return await connection?.query(table,where:'$columnName',whereArgs: [columnValue]);
+  }
 }
